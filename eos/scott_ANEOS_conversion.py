@@ -3,6 +3,7 @@
 #
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import sys
 from scipy.interpolate import interp1d
@@ -98,10 +99,14 @@ Create a new grid of energies that change exponentially away from the origin.
 for m in range(0, nu):
     new_energy = np.append(new_energy,umin*delta**m)  # exponential grid
 
+plt.rcParams["figure.figsize"] = [16, 9]
+plt.rcParams.update({'font.size': 16})
 fig_energy = plt.figure()
 ax_energy = fig_energy.add_subplot(111)
-ax_energy.plot(list(range(0, nu)), new_energy)
-ax_energy.set_title('Energy as Function of Gridspacing')
+ax_energy.plot(list(range(0, nu)), new_energy * 1e-6, linewidth=2.0, color='black')
+ax_energy.set_title('Modified Internal Energy vs. Grid Spacing')
+ax_energy.set_xlabel("Grid Number")
+ax_energy.set_ylabel("Modified Internal Energy (MJ/kg)")
 ax_energy.grid()
 
 new_temperature = np.zeros(shape=(nr, nu))
