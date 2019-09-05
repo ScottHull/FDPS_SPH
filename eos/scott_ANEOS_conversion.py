@@ -99,15 +99,15 @@ Create a new grid of energies that change exponentially away from the origin.
 for m in range(0, nu):
     new_energy = np.append(new_energy,umin*delta**m)  # exponential grid
 
-plt.rcParams["figure.figsize"] = [16, 9]
-plt.rcParams.update({'font.size': 16})
-fig_energy = plt.figure()
-ax_energy = fig_energy.add_subplot(111)
-ax_energy.plot(list(range(0, nu)), new_energy * 1e-6, linewidth=2.0, color='black')
-ax_energy.set_title('Modified Internal Energy vs. Grid Spacing')
-ax_energy.set_xlabel("Grid Number")
-ax_energy.set_ylabel("Modified Internal Energy (MJ/kg)")
-ax_energy.grid()
+# plt.rcParams["figure.figsize"] = [16, 9]
+# plt.rcParams.update({'font.size': 16})
+# fig_energy = plt.figure()
+# ax_energy = fig_energy.add_subplot(111)
+# ax_energy.plot(list(range(0, nu)), new_energy * 1e-6, linewidth=2.0, color='black')
+# ax_energy.set_title('Modified Internal Energy vs. Grid Spacing')
+# ax_energy.set_xlabel("Grid Number")
+# ax_energy.set_ylabel("Modified Internal Energy (MJ/kg)")
+# ax_energy.grid()
 
 new_temperature = np.zeros(shape=(nr, nu))
 new_pressure = np.zeros(shape=(nr, nu))
@@ -119,22 +119,56 @@ new_entropy = np.zeros(shape=(nr, nu))
 for m in range(0, nu):
     # approximate temperature given internal energy
     f_temperature = interpolate.interp1d(energy[m, :], temperature, kind='linear', fill_value='extrapolate')
-    new_temperature[m][:] = f_temperature(new_energy)
+    new_temperature[m] = f_temperature(new_energy)
 
     # approximate pressure given temperature
     f_pressure = interpolate.interp1d(temperature, pressure[m, :], kind='linear', fill_value='extrapolate')
-    new_pressure[m][:] = f_pressure(new_temperature[m][:])
+    new_pressure[m] = f_pressure(new_temperature[m][:])
 
     # approximate sound speed given temperature
     f_soundspeed = interpolate.interp1d(temperature, soundspeed[m, :], kind='linear', fill_value='extrapolate')
-    new_soundspeed[m][:] = f_soundspeed(new_temperature[m][:])
+    new_soundspeed[m] = f_soundspeed(new_temperature[m][:])
 
     # approximate entropy given temperature
     f_entropy = interpolate.interp1d(temperature, entropy[m, :], kind='linear', fill_value='extrapolate')
-    new_entropy[m][:] = f_entropy(new_temperature[m][:])
+    new_entropy[m] = f_entropy(new_temperature[m][:])
 
 
 # producing a few output images to make sure that this fitting is doing an okay job
+# for m in range(0, nr, int(nr/6)):
+#
+#     ax = [0, 0, 0, 0]
+#
+#     fig = plt.figure(figsize=(10, 6.128))
+#
+#     ax[0] = fig.add_subplot(221)
+#     ax[1] = fig.add_subplot(222)
+#     ax[2] = fig.add_subplot(223)
+#     ax[3] = fig.add_subplot(224)
+#
+#     ax[0].semilogy(temperature * 1e-3, energy[m] * 1e-6, '--', label="original ANEOS")
+#     ax[0].semilogy(new_temperature[m] * 1e-3, new_energy * 1e-6, '-.', label="modified")
+#     ax[1].semilogy(temperature * 1e-3, pressure[m] * 1e-6,'--', new_temperature[m] * 1e-3, new_pressure[m] * 1e-6, '-.')
+#     ax[2].plot(temperature * 1e-3, soundspeed[m] * 1e-3,'--', new_temperature[m] * 1e-3, new_soundspeed[m] * 1e-3, '-.')
+#     ax[3].plot(temperature * 1e-3, entropy[m] * 1e-3,'--', new_temperature[m] * 1e-3, new_entropy[m] * 1e-3, '-.')
+#
+#     ax[0].legend(frameon=False)
+#
+#     ax[0].set_ylabel('Energy (MJ/kg)', fontsize=10)
+#     ax[1].set_ylabel('Pressure (MPa)', fontsize=10)
+#     ax[2].set_ylabel('Sound Speed (km/s)', fontsize=10)
+#     ax[3].set_ylabel('Entropy (kJ/K/kg)', fontsize=10)
+#     ax[2].set_xlabel('Temperature ($10^3$ K)', fontsize=10)
+#     ax[3].set_xlabel('Temperature ($10^3$ K)',fontsize=10)
+#
+#     ax[0].grid()
+#     ax[1].grid()
+#     ax[2].grid()
+#     ax[3].grid()
+#
+#     fig.suptitle("Density: %3.3f kg/m$^3$" %(density[m]))
+#     # fig.savefig("Density" + str(m) + ".png")
+
 for m in range(0, nr, int(nr/6)):
 
     ax = [0, 0, 0, 0]
@@ -146,20 +180,20 @@ for m in range(0, nr, int(nr/6)):
     ax[2] = fig.add_subplot(223)
     ax[3] = fig.add_subplot(224)
 
-    ax[0].semilogy(temperature * 1e-3, energy[m] * 1e-6, '--', label="original ANEOS")
-    ax[0].semilogy(new_temperature[m] * 1e-3, new_energy * 1e-6, '-.', label="modified")
-    ax[1].semilogy(temperature * 1e-3, pressure[m] * 1e-6,'--', new_temperature[m] * 1e-3, new_pressure[m] * 1e-6, '-.')
-    ax[2].plot(temperature * 1e-3, soundspeed[m] * 1e-3,'--', new_temperature[m] * 1e-3, new_soundspeed[m] * 1e-3, '-.')
-    ax[3].plot(temperature * 1e-3, entropy[m] * 1e-3,'--', new_temperature[m] * 1e-3, new_entropy[m] * 1e-3, '-.')
+    ax[0].semilogy(energy[m] * 1e-6, temperature * 1e-3, '--', label="original ANEOS")
+    ax[0].semilogy(new_energy * 1e-6, new_temperature[m] * 1e-3, '-.', label="modified")
+    ax[1].semilogy(energy[m] * 1e-6, pressure[m] * 1e-6,'--', new_energy * 1e-6, new_pressure[m] * 1e-6, '-.')
+    ax[2].plot(energy[m] * 1e-6, soundspeed[m] * 1e-3,'--', new_energy * 1e-6, new_soundspeed[m] * 1e-3, '-.')
+    ax[3].plot(energy[m] * 1e-6, entropy[m] * 1e-3,'--', new_energy * 1e-6, new_entropy[m] * 1e-3, '-.')
 
     ax[0].legend(frameon=False)
 
-    ax[0].set_ylabel('Energy (MJ/kg)', fontsize=10)
+    ax[0].set_xlabel('Energy (MJ/kg)', fontsize=10)
     ax[1].set_ylabel('Pressure (MPa)', fontsize=10)
     ax[2].set_ylabel('Sound Speed (km/s)', fontsize=10)
     ax[3].set_ylabel('Entropy (kJ/K/kg)', fontsize=10)
-    ax[2].set_xlabel('Temperature ($10^3$ K)', fontsize=10)
-    ax[3].set_xlabel('Temperature ($10^3$ K)',fontsize=10)
+    ax[2].set_xlabel('Energy (MJ/kg)', fontsize=10)
+    ax[3].set_xlabel('Energy (MJ/kg)', fontsize=10)
 
     ax[0].grid()
     ax[1].grid()
@@ -168,6 +202,14 @@ for m in range(0, nr, int(nr/6)):
 
     fig.suptitle("Density: %3.3f kg/m$^3$" %(density[m]))
     # fig.savefig("Density" + str(m) + ".png")
+
+fig2 = plt.figure()
+ax2 = fig2.add_subplot(111)
+ax2.plot(energy * 1e-6, new_energy * 1e-6)
+ax2.set_xlabel("Old Energy")
+ax2.set_ylabel("New Energy")
+ax2.set_title("New Energy vs. Old Energy")
+ax2.grid()
 
 plt.show()
 
