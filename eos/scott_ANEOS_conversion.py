@@ -135,51 +135,51 @@ for m in range(0, nu):
 
 
 # producing a few output images to make sure that this fitting is doing an okay job
-plt.rcParams["figure.figsize"] = [16, 9]
-for m in range(0, nr, int(nr/6)):
-
-    ax = [0, 0, 0, 0, 0]
-
-    fig = plt.figure(figsize=(10, 6.128))
-
-    ax[0] = fig.add_subplot(221)
-    ax[1] = fig.add_subplot(222)
-    ax[2] = fig.add_subplot(223)
-    ax[3] = fig.add_subplot(224)
-
-    ax[0].semilogy(energy[m] * 1e-6, temperature * 1e-3, '--', label="original ANEOS")
-    ax[0].semilogy(new_energy * 1e-6, new_temperature[m] * 1e-3, '-.', label="modified")
-
-
-    ax[1].semilogy(energy[m] * 1e-6, soundspeed[m] * 1e-3,'--')
-    ax[1].semilogy(new_energy * 1e-6, new_soundspeed[m] * 1e-3, '-.')
-
-    ax[2].semilogy(energy[m] * 1e-6, entropy[m] * 1e-3,'--')
-    ax[2].semilogy(new_energy * 1e-6, new_entropy[m] * 1e-3,'--')
-
-    ax[3].semilogy(energy[m] * 1e-6, pressure[m] * 1e-3,'--')
-    ax[3].semilogy(new_energy * 1e-6, new_pressure[m] * 1e-3,'--')
-
-
-    ax[0].legend(frameon=False)
-
-    ax[0].set_xlabel('Energy (MJ/kg)', fontsize=10)
-    ax[1].set_xlabel('Energy (MJ/kg)', fontsize=10)
-    ax[2].set_xlabel('Energy (MJ/kg)', fontsize=10)
-    ax[3].set_xlabel('Energy (MJ/kg)', fontsize=10)
-
-    ax[0].set_ylabel('Temperature (K)', fontsize=10)
-    ax[1].set_ylabel('Sound Speed (m/s2)', fontsize=10)
-    ax[2].set_ylabel('Entropy (kJ/K/kg)', fontsize=10)
-    ax[3].set_ylabel('Pressure (MPa)', fontsize=10)
-
-    ax[0].grid()
-    ax[1].grid()
-    ax[2].grid()
-    ax[3].grid()
-
-    fig.suptitle("Density: %3.3f kg/m$^3$" %(density[m]))
-    # fig.savefig("Density" + str(m) + ".png")
+# plt.rcParams["figure.figsize"] = [16, 9]
+# for m in range(0, nr, int(nr/6)):
+#
+#     ax = [0, 0, 0, 0, 0]
+#
+#     fig = plt.figure(figsize=(10, 6.128))
+#
+#     ax[0] = fig.add_subplot(221)
+#     ax[1] = fig.add_subplot(222)
+#     ax[2] = fig.add_subplot(223)
+#     ax[3] = fig.add_subplot(224)
+#
+#     ax[0].semilogy(energy[m] * 1e-6, temperature * 1e-3, '--', label="original ANEOS")
+#     ax[0].semilogy(new_energy * 1e-6, new_temperature[m] * 1e-3, '-.', label="modified")
+#
+#
+#     ax[1].semilogy(energy[m] * 1e-6, soundspeed[m] * 1e-3,'--')
+#     ax[1].semilogy(new_energy * 1e-6, new_soundspeed[m] * 1e-3, '-.')
+#
+#     ax[2].semilogy(energy[m] * 1e-6, entropy[m] * 1e-3,'--')
+#     ax[2].semilogy(new_energy * 1e-6, new_entropy[m] * 1e-3,'--')
+#
+#     ax[3].semilogy(energy[m] * 1e-6, pressure[m] * 1e-3,'--')
+#     ax[3].semilogy(new_energy * 1e-6, new_pressure[m] * 1e-3,'--')
+#
+#
+#     ax[0].legend(frameon=False)
+#
+#     ax[0].set_xlabel('Energy (MJ/kg)', fontsize=10)
+#     ax[1].set_xlabel('Energy (MJ/kg)', fontsize=10)
+#     ax[2].set_xlabel('Energy (MJ/kg)', fontsize=10)
+#     ax[3].set_xlabel('Energy (MJ/kg)', fontsize=10)
+#
+#     ax[0].set_ylabel('Temperature (K)', fontsize=10)
+#     ax[1].set_ylabel('Sound Speed (m/s2)', fontsize=10)
+#     ax[2].set_ylabel('Entropy (kJ/K/kg)', fontsize=10)
+#     ax[3].set_ylabel('Pressure (MPa)', fontsize=10)
+#
+#     ax[0].grid()
+#     ax[1].grid()
+#     ax[2].grid()
+#     ax[3].grid()
+#
+#     fig.suptitle("Density: %3.3f kg/m$^3$" %(density[m]))
+#     # fig.savefig("Density" + str(m) + ".png")
 
 
 
@@ -208,11 +208,14 @@ for m in range(0, nu):
     f_entropy = interpolate.interp2d(new_energy, density, new_entropy, kind='linear', fill_value='extrapolate')
     new_entropy_2d[m] = f_entropy(new_energy, density)
 
-for m in range(0, nr, int(nr/6)):
+for m in range(0, nr, int(nr/1)):
     fig = plt.figure()
-    ax = plt.axes(projection='3d')
+    ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(new_energy, density, new_temperature_2d[m], rstride=1, cstride=1,
-                    cmap='viridis', edgecolor='none')
+                    cmap='viridis')
+    # ax.plot(new_energy, density, linestyle='--', color='green')
+    ax.plot3D(energy[m], [density[m] for i in energy[m]], temperature, linestyle='--', color='red')
+    ax.plot3D(new_energy, density, new_temperature[m], linestyle='--', color='purple')
     ax.set_xlabel('Energy (J/kg)')
     ax.set_ylabel('Density (kg)')
     ax.set_zlabel('Temperature (K)')
