@@ -208,18 +208,19 @@ for m in range(0, nu):
     f_entropy = interpolate.interp2d(new_energy, density, new_entropy, kind='linear', fill_value='extrapolate')
     new_entropy_2d[m] = f_entropy(new_energy, density)
 
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 for m in range(0, nr, int(nr/1)):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(new_energy, density, new_temperature_2d[m], rstride=1, cstride=1,
                     cmap='viridis')
     # ax.plot(new_energy, density, linestyle='--', color='green')
-    ax.plot3D(energy[m], [density[m] for i in energy[m]], temperature, linestyle='--', color='red')
+    # ax.plot3D(energy[m], [density[m] for i in energy[m]], temperature, linestyle='--', color='red')
+    # ax.plot3D(new_energy, density, new_temperature[m], linestyle='--', color='purple')
+for m in range(0, nr, int(nr/8)):
     ax.plot3D(new_energy, density, new_temperature[m], linestyle='--', color='purple')
-    ax.set_xlabel('Energy (J/kg)')
-    ax.set_ylabel('Density (kg)')
-    ax.set_zlabel('Temperature (K)')
-
+ax.set_xlabel('Energy (J/kg)')
+ax.set_ylabel('Density (kg)')
+ax.set_zlabel('Temperature (K)')
 
 
 plt.show()
