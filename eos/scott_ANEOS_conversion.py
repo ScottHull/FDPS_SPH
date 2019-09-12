@@ -193,31 +193,49 @@ new_entropy_2d = np.zeros(shape=(nr, nu, nu))
 for m in range(0, nu):
 
     # approximate temperature given internal energy
-    f_temperature = interpolate.interp2d(new_energy, density, new_temperature, kind='linear', fill_value='extrapolate')
+    # f_temperature = interpolate.interp2d(new_energy, density, new_temperature, kind='linear', fill_value='extrapolate')
+    # new_temperature_2d[m] = f_temperature(new_energy, density)
+    #
+    # # approximate pressure given temperature
+    # f_pressure = interpolate.interp2d(new_energy, density, new_pressure, kind='linear', fill_value='extrapolate')
+    # new_pressure_2d[m] = f_pressure(new_energy, density)
+    #
+    # # approximate sound speed given temperature
+    # f_soundspeed = interpolate.interp2d(new_energy, density, new_soundspeed, kind='linear', fill_value='extrapolate')
+    # new_soundspeed_2d[m] = f_soundspeed(new_energy, density)
+    #
+    # # approximate entropy given temperature
+    # f_entropy = interpolate.interp2d(new_energy, density, new_entropy, kind='linear', fill_value='extrapolate')
+    # new_entropy_2d[m] = f_entropy(new_energy, density)
+
+    f_temperature = interpolate.interp2d(energy[m], [density[m] for i in energy[m]], temperature, kind='linear', fill_value='extrapolate')
     new_temperature_2d[m] = f_temperature(new_energy, density)
 
     # approximate pressure given temperature
-    f_pressure = interpolate.interp2d(new_energy, density, new_pressure, kind='linear', fill_value='extrapolate')
+    f_pressure = interpolate.interp2d(energy[m], [density[m] for i in energy[m]], pressure[m], kind='linear', fill_value='extrapolate')
     new_pressure_2d[m] = f_pressure(new_energy, density)
 
     # approximate sound speed given temperature
-    f_soundspeed = interpolate.interp2d(new_energy, density, new_soundspeed, kind='linear', fill_value='extrapolate')
+    f_soundspeed = interpolate.interp2d(energy[m], [density[m] for i in energy[m]], soundspeed[m], kind='linear', fill_value='extrapolate')
     new_soundspeed_2d[m] = f_soundspeed(new_energy, density)
 
     # approximate entropy given temperature
-    f_entropy = interpolate.interp2d(new_energy, density, new_entropy, kind='linear', fill_value='extrapolate')
+    f_entropy = interpolate.interp2d(energy[m], [density[m] for i in energy[m]], entropy[m], kind='linear', fill_value='extrapolate')
     new_entropy_2d[m] = f_entropy(new_energy, density)
+
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-for m in range(0, nr, int(nr/1)):
-    ax.plot_surface(new_energy, density, new_temperature_2d[m], rstride=1, cstride=1,
-                    cmap='viridis')
+# for m in range(0, nr, int(nr/1)):
+#     ax.plot_surface(new_energy, density, new_temperature_2d[m], rstride=1, cstride=1,
+#                     cmap='viridis')
     # ax.plot(new_energy, density, linestyle='--', color='green')
     # ax.plot3D(energy[m], [density[m] for i in energy[m]], temperature, linestyle='--', color='red')
     # ax.plot3D(new_energy, density, new_temperature[m], linestyle='--', color='purple')
-for m in range(0, nr, int(nr/8)):
+for m in range(0, nr):
     ax.plot3D(new_energy, density, new_temperature[m], linestyle='--', color='purple')
+for m in range(0, nu):
+    ax.plot3D(energy[m], [density[m] for i in energy[m]], temperature)
 ax.set_xlabel('Energy (J/kg)')
 ax.set_ylabel('Density (kg)')
 ax.set_zlabel('Temperature (K)')

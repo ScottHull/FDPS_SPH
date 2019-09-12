@@ -109,14 +109,14 @@ for m in range(0,nu):
 # producing a few output images to make sure that this fitting is doing an okay job
 for m in range(0,nr, int(nr/6)):
 
-    ax=[0, 0, 0, 0]
+    ax = [0, 0, 0, 0]
 
-    fig=plt.figure(figsize=(10,6.128))
+    fig = plt.figure(figsize=(10,6.128))
 
-    ax[0]=fig.add_subplot(221)
-    ax[1]=fig.add_subplot(222)
-    ax[2]=fig.add_subplot(223)
-    ax[3]=fig.add_subplot(224)
+    ax[0] = fig.add_subplot(221)
+    ax[1] = fig.add_subplot(222)
+    ax[2] = fig.add_subplot(223)
+    ax[3] = fig.add_subplot(224)
 
     ax[0].semilogy(temperature*1e-3, energy[m,:]*1e-6, '--', label = "original ANEOS")
     ax[0].semilogy(new_temperature[m, :]*1e-3, new_energy[:]*1e-6, '-.', label="modified")
@@ -132,6 +132,8 @@ for m in range(0,nr, int(nr/6)):
     
     fig.suptitle("Density: %3.3f kg/m$^3$" %(density[m]))
     fig.savefig("Density" + str(m) + ".png")
+
+plt.show()
 
 h = open(outputfilename,'w')
 h.write("%i %i %s \n" % (nr, nu , ':Grid numbers for density and internal energy'))
