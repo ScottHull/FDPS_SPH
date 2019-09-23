@@ -44,19 +44,18 @@ class BilinearInterpolation:
         return m
 
     def getBoundaries(self):
-        
+
+        print(self.variable_matrix)
         density_neighbors = (self.density_array[0], self.density_array[len(self.density_array) - 1])
         energy_neighbors = (self.internal_energy_array[0], self.internal_energy_array[len(self.internal_energy_array) - 1])
-    
-        corresponding_variables = (self.variable_matrix[0][0], self.variable_matrix[len(self.variable_matrix) - 1][0],
-                                   self.variable_matrix[0][60 - 1],
-                                   self.variable_matrix[len(self.variable_matrix) - 1][60 - 1])
-    
-        q11 = (density_neighbors[0], energy_neighbors[0], corresponding_variables[0])
-        q12 = (density_neighbors[1], energy_neighbors[0], corresponding_variables[1])
-        q21 = (density_neighbors[0], energy_neighbors[1], corresponding_variables[2])
-        q22 = (density_neighbors[1], energy_neighbors[1], corresponding_variables[3])
+        corresponding_variables = (self.variable_matrix[0][0], self.variable_matrix[len(self.variable_matrix) - 1][60 - 1])
+
+        q11 = (density_neighbors[0], energy_neighbors[0], self.variable_matrix[0][0])
+        q12 = (density_neighbors[1], energy_neighbors[0], self.variable_matrix[len(self.variable_matrix) - 1][0])
+        q21 = (density_neighbors[0], energy_neighbors[1], self.variable_matrix[0][60 - 1])
+        q22 = (density_neighbors[1], energy_neighbors[1], max(self.variable_array))
         return [q11, q12, q21, q22]
+
 
     def interpolate(self):
 
@@ -77,6 +76,7 @@ class BilinearInterpolation:
         # See formula at:  http://en.wikipedia.org/wiki/Bilinear_interpolation
 
         points = sorted(self.points)               # order points by x, then by y
+        print(points)
         (x1, y1, q11), (_x1, y2, q12), (x2, _y1, q21), (_x2, _y2, q22) = points
 
         if x1 != _x1 or x2 != _x2 or y1 != _y1 or y2 != _y2:
@@ -96,30 +96,34 @@ class BilinearInterpolation:
 
 
 
-interpolation_file = pd.read_csv('/Users/scotthull/Documents - Scott’s MacBook Pro/PhD Research/FDPS_SPH/eos/granite.rho_u.csv')
-original_data_file = pd.read_csv('/Users/scotthull/Documents - Scott’s MacBook Pro/PhD Research/FDPS_SPH/eos/granite.table.csv')
+interpolation_file = pd.read_csv('/Users/scotthull/Desktop/FDPS_SPH_ScottHull/eos/granite.rho_u.csv')
+original_data_file = pd.read_csv('/Users/scotthull/Desktop/FDPS_SPH_ScottHull/eos/granite.table.csv')
 
 density_array = interpolation_file['Density (kg/m3)']
 energy_array = interpolation_file['Energy (J/kg)']
 temperature_array = interpolation_file['Temperature (K)']
 
-# density = 1520
-# internal_energy = 1e9
+density = 1520
+internal_energy = 1e9
 
-# b = BilinearInterpolation(density=density, internal_energy=internal_energy, density_array=density_array,
-#                           internal_energy_array=energy_array, variable_array=temperature_array)
+b = BilinearInterpolation(density=density, internal_energy=internal_energy, density_array=density_array,
+                          internal_energy_array=energy_array, variable_array=temperature_array)
 
 fig = plt.figure()
 ax = Axes3D(fig)
 ax.plot(density_array, energy_array, temperature_array, color='blue')
 ax.plot(original_data_file['Density (kg/m3)'], original_data_file['Energy (J/kg)'],
            original_data_file['Temperature (K)'], color='red')
-for index, i in enumerate(density_array):
-    density = density_array[index]
-    internal_energy = energy_array[index]
-    b = BilinearInterpolation(density=density, internal_energy=internal_energy, density_array=density_array,
-                              internal_energy_array=energy_array, variable_array=temperature_array)
-    ax.scatter(density, internal_energy, b.interpolate(), color='green')
+ax.scatter(density, internal_energy, b.interpolate(), color='green')
+for i in b.points:
+    ax.scatter(i[0], i[1], i[2], color='purple')
+# for index, i in enumerate(density_array):
+#     print(index, len(density_array))
+#     density = density_array[index]
+#     internal_energy = energy_array[index]
+#     b = BilinearInterpolation(density=density, internal_energy=internal_energy, density_array=density_array,
+#                               internal_energy_array=energy_array, variable_array=temperature_array)
+#     ax.scatter(density, internal_energy, b.interpolate(), color='green')
 ax.set_xlabel("Density (kg/m3)")
 ax.set_ylabel("Internal Energy (J/kg)")
 ax.set_zlabel("Temperature (K)")
