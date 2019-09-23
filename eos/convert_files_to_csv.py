@@ -15,37 +15,22 @@ def removeOutput(oname):
         os.remove(oname)
 
 
-oname = fname1.replace('.txt', '.csv')
-removeOutput(oname=oname)
-with open(oname, 'w') as outfile:
-    reader = returnReader(fname=fname2, delimiter=' ')
-    for row in reader:
-        if len(row) == 0:
-            pass
-        else:
-            rowstr = ",".join(row).replace(",,", ',')
-            try:
-                if rowstr[0] == ',':
-                    rowstr = rowstr[1:]
-                    outfile.write(rowstr + '\n')
-                else:
-                    outfile.write(rowstr + '\n')
-            except:
-                outfile.write(rowstr + '\n')
-outfile.close()
-
-oname = fname2.replace('.txt', '.csv')
-removeOutput(oname=oname)
-with open(oname, 'w') as outfile:
-    reader = returnReader(fname=fname2, delimiter=' ')
-    for row in reader:
-        rowstr = ",".join(row).replace(",,", ',')
-        try:
-            if rowstr[0] == ',':
-                rowstr = rowstr[1:]
-                outfile.write(rowstr + '\n')
+for fname in fnames:
+    oname = fname.replace('.txt', '.csv')
+    removeOutput(oname=oname)
+    with open(oname, 'w') as outfile:
+        reader = returnReader(fname=fname, delimiter=' ')
+        for row in reader:
+            if len(row) == 0:
+                pass
             else:
-                outfile.write(rowstr + '\n')
-        except:
-            outfile.write(rowstr + '\n')
-outfile.close()
+                rowstr = ",".join(row).replace(",,", ',')
+                try:
+                    if rowstr[0] == ',':
+                        rowstr = rowstr[1:]
+                        outfile.write(rowstr + '\n')
+                    else:
+                        outfile.write(rowstr + '\n')
+                except:
+                    outfile.write(rowstr + '\n')
+    outfile.close()

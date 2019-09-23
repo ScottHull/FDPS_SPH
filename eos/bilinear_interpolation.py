@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from math import sqrt
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 interpolation_file = pd.read_csv('granite.rho_u.csv')
 
@@ -77,48 +78,6 @@ def matrix_variable(density_array, energy_array, variable_array):
 
     return m
 
-# def calculate_distance(x1, x2, y1, y2):
-#
-#     d = sqrt(((x1 - x2)**2) + ((y1 - y2)**2))
-#
-#     return d
-#
-# def get_nearest_neighbors_by_min(density_value, energy_value, density_array, energy_array):
-#
-#     """
-#     You might not need nearest neighbors.  You could just get away with boundary values.
-#     :param density_value:
-#     :param energy_value:
-#     :param density_array:
-#     :param energy_array:
-#     :return:
-#     """
-#
-#     min_distance = ()
-#     min_distance_index = 0
-#     l = zip(density_array, energy_array)
-#     for index, i in enumerate(l):
-#         min_candidate = calculate_distance(x1=density_value, x2=i[0], y1=energy_value, y2=i[1])
-#         if len(min_distance) == 0:
-#             min_distance = i
-#             min_distance_index = index
-#         elif min_candidate < sqrt((min_distance[0]**2) + min_distance[1]**2):
-#             min_distance = i
-#             min_distance_index = index
-#
-#     density_plus = density_array[min_distance_index]
-#     density_minus = density_array[min_distance_index]
-#     energy_plus = energy_array[min_distance_index]
-#     energy_minus = energy_array[min_distance_index]
-#
-#     q11 = (density_minus, energy_minus)
-#     q21 = (density_plus, energy_minus)
-#     q12 = (density_minus, energy_plus)
-#     q22 = (density_plus, energy_plus)
-#
-#
-#     return [q11, q21, q12, q22]
-
 
 def get_database_boundaries(density_array, energy_array, variable_matrix):
 
@@ -139,42 +98,15 @@ def get_database_boundaries(density_array, energy_array, variable_matrix):
 def plot_interpolate(points, interpolated_point, weights):
 
     fig = plt.figure()
-    ax = fig.add_subplot(111)
-    for i in points:
-        ax.scatter(i[0], i[1], color='red')
-    ax.scatter(interpolated_point[0], interpolated_point[1], color='green', label='Interpolated Point')
-    ax.scatter(weights[0], interpolated_point[0], color='purple')
-    ax.scatter(weights[1], interpolated_point[1], color='blue')
-    ax.set_xlabel("Density (kg/m3)")
-    ax.set_ylabel("Internal Energy (J/kg)")
-    ax.set_title("Bilinear Interpolation")
-    # ax.legend(loc='center right')
-    ax.grid()
-
-    return fig
+    ax = Axes3D(fig)
 
 
-# def calculate_interpolation_weights(density_neighbors, energy_neighbors, interpolated_point,
-#                                     corresponding_variable_point):
-#
-#     density_weight = (((density_neighbors[1] - interpolated_point[0]) / (density_neighbors[1] - density_neighbors[0]))
-#                     * corresponding_variable_point[0]) + (((interpolated_point[0] - density_neighbors[0]) /
-#                     (density_neighbors[1] - density_neighbors[0])) * corresponding_variable_point[1])
-#
-#     energy_weight = (((density_neighbors[1] - interpolated_point[0]) / (density_neighbors[1] - density_neighbors[0]))
-#                      * corresponding_variable_point[2]) + (((interpolated_point[0] - density_neighbors[0]) /
-#                      (density_neighbors[1] - density_neighbors[0])) * corresponding_variable_point[3])
-#
-#     return density_weight, energy_weight
+def plot_database(densities, internal_energies, variables):
 
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.plot(densities, internal_energies, variables)
 
-# def interpolate(density_neighbors, energy_neighbors, interpolated_point, density_weight, energy_weight):
-#
-#     p = (((energy_neighbors[1] - interpolated_point[1]) / (energy_neighbors[1] - energy_neighbors[0])) *
-#          density_weight) + ((interpolated_point[1] - energy_neighbors) / (energy_neighbors[1] - energy_neighbors[0])
-#                             * energy_weight)
-#
-#     return p
 
 
 def bilinear_interpolate(density, energy, density_array, energy_array, variable_array):
@@ -192,7 +124,7 @@ def bilinear_interpolate(density, energy, density_array, energy_array, variable_
     i = bilinear_interpolation(density, energy, points)
 
 
-    fig = plot_interpolate( points=points, interpolated_point=interpolated_point, weights=w)
+    plot_database(densities=density_array, internal_energies=energy_array, variables=variable_array)
 
     plt.show()
 
