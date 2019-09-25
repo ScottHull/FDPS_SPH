@@ -1,12 +1,15 @@
 import pandas as pd
 
+from random import randint
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
 class BilinearInterpolation:
 
-    def __init__(self, density_array, internal_energy_array, variable_array, density, internal_energy):
+    def __init__(self, density_array, internal_energy_array, variable_array, density, internal_energy,
+                 interpolation_type):
 
         self.density_array = density_array
         self.internal_energy_array = internal_energy_array
@@ -15,7 +18,10 @@ class BilinearInterpolation:
         self.internal_energy = internal_energy
 
         self.variable_matrix = self.matrix_variable()
-        self.points = self.getBoundaries()
+        if interpolation_type.lower() == 'boundaries':
+            self.points = self.getBoundaries()
+        else:
+            self.points = self.getNearestNeighbors()
 
 
     def matrix_variable(self):
@@ -45,16 +51,99 @@ class BilinearInterpolation:
 
     def getBoundaries(self):
 
-        print(self.variable_matrix)
-        density_neighbors = (self.density_array[0], self.density_array[len(self.density_array) - 1])
-        energy_neighbors = (self.internal_energy_array[0], self.internal_energy_array[len(self.internal_energy_array) - 1])
-        corresponding_variables = (self.variable_matrix[0][0], self.variable_matrix[len(self.variable_matrix) - 1][60 - 1])
+        # density_neighbors = (self.density_array[0], self.density_array[len(self.density_array) - 1])
+        # energy_neighbors = (self.internal_energy_array[0], self.internal_energy_array[len(self.internal_energy_array) - 1])
+        # corresponding_variables = (self.variable_matrix[0][0], self.variable_matrix[len(self.variable_matrix) - 1][60 - 1])
 
-        q11 = (density_neighbors[0], energy_neighbors[0], self.variable_matrix[0][0])
-        q12 = (density_neighbors[1], energy_neighbors[0], self.variable_matrix[len(self.variable_matrix) - 1][0])
-        q21 = (density_neighbors[0], energy_neighbors[1], self.variable_matrix[0][60 - 1])
-        q22 = (density_neighbors[1], energy_neighbors[1], max(self.variable_array))
+        density_neighbors = (min(self.density_array), max(self.density_array))
+        energy_neighbors = (min(self.internal_energy_array), max(self.internal_energy_array))
+
+        # q11 = (density_neighbors[0], energy_neighbors[0], self.variable_matrix[0][0])
+        # q12 = (density_neighbors[1], energy_neighbors[0], self.variable_matrix[len(self.variable_matrix) - 1][0])
+        # q21 = (density_neighbors[0], energy_neighbors[1], self.variable_matrix[0][60 - 1])
+        # q22 = (density_neighbors[1], energy_neighbors[1], max(self.variable_array))
+
+        variable_neighbors = [0, 0, 0, 0]
+        z = zip(self.density_array, self.internal_energy_array, self.variable_array)
+
+
+        for i in z:
+            d = i[0]
+            e = i[1]
+            v = i[2]
+            if d == density_neighbors[0] and e == energy_neighbors[0]:
+                variable_neighbors[0] = v
+            elif d == density_neighbors[1] and e == energy_neighbors[0]:
+                variable_neighbors[1] = v
+            elif d == density_neighbors[0] and e == energy_neighbors[1]:
+                variable_neighbors[2] = v
+            elif d == density_neighbors[1] and e == energy_neighbors[1]:
+                variable_neighbors[3] = v
+            else:
+                pass
+
+        q11 = (density_neighbors[0], energy_neighbors[0], variable_neighbors[0])
+        q12 = (density_neighbors[1], energy_neighbors[0], variable_neighbors[1])
+        q21 = (density_neighbors[0], energy_neighbors[1], variable_neighbors[2])
+        q22 = (density_neighbors[1], energy_neighbors[1], variable_neighbors[3])
+
         return [q11, q12, q21, q22]
+
+
+    def getNearestNeighbors(self):
+
+        z = zip(self.density_array, self.internal_energy_array, self.variable_array)
+
+        def calcDistance(x, y, x1, y1):
+            return ((x - x1)**2 + (y  - y1))**(1/2)
+
+        q11 = None
+        q21 = None
+        q12 = None
+        q22 = None
+
+
+        for i in z:
+
+            d = i[0]
+            e = i[1]
+
+            distance = calcDistance(self.density, self.internal_energy, d, e)
+            if d <= self.density:
+                if e <= self.internal_energy:
+                    if q11 is None:
+                        q11 = i
+                    else:
+                        q11_distance = calcDistance(self.density, self.internal_energy, q11[0], q11[1])
+                        if distance < q11_distance:
+                            q11 = i
+            elif d >= self.density:
+                if e <= self.internal_energy:
+                    if q21 is None:
+                        q21 = i
+                    else:
+                        q21_distance = calcDistance(self.density, self.internal_energy, q21[0], q21[1])
+                        if distance < q21_distance:
+                            q21 = i
+            elif d <= self.density:
+                if e >= self.internal_energy:
+                    if q21 is None:
+                        q12 = i
+                    else:
+                        q12_distance = calcDistance(self.density, self.internal_energy, q12[0], q12[1])
+                        if distance < q12_distance:
+                            q12 = i
+            elif d >= self.density:
+                if e >= self.internal_energy:
+                    if q22 is None:
+                        q22 = i
+                    else:
+                        q22_distance = calcDistance(self.density, self.internal_energy, q22[0], q22[1])
+                        if distance < q22_distance:
+                            q22 = i
+
+        return [q11, q12, q21, q22]
+
 
 
     def interpolate(self):
@@ -76,7 +165,6 @@ class BilinearInterpolation:
         # See formula at:  http://en.wikipedia.org/wiki/Bilinear_interpolation
 
         points = sorted(self.points)               # order points by x, then by y
-        print(points)
         (x1, y1, q11), (_x1, y2, q12), (x2, _y1, q21), (_x2, _y2, q22) = points
 
         if x1 != _x1 or x2 != _x2 or y1 != _y1 or y2 != _y2:
@@ -92,19 +180,15 @@ class BilinearInterpolation:
 
 
 
-
-
-
-
-interpolation_file = pd.read_csv('/Users/scotthull/Desktop/FDPS_SPH_ScottHull/eos/granite.rho_u.csv')
-original_data_file = pd.read_csv('/Users/scotthull/Desktop/FDPS_SPH_ScottHull/eos/granite.table.csv')
+interpolation_file = pd.read_csv('/Users/scotthull/Documents - Scott’s MacBook Pro/PhD Research/FDPS_SPH/eos/granite.rho_u.csv')
+original_data_file = pd.read_csv('/Users/scotthull/Documents - Scott’s MacBook Pro/PhD Research/FDPS_SPH/eos/granite.table.csv')
 
 density_array = interpolation_file['Density (kg/m3)']
 energy_array = interpolation_file['Energy (J/kg)']
 temperature_array = interpolation_file['Temperature (K)']
 
-density = 1520
-internal_energy = 1e9
+density = 5000
+internal_energy = 1.50e9
 
 b = BilinearInterpolation(density=density, internal_energy=internal_energy, density_array=density_array,
                           internal_energy_array=energy_array, variable_array=temperature_array)
@@ -114,9 +198,23 @@ ax = Axes3D(fig)
 ax.plot(density_array, energy_array, temperature_array, color='blue')
 ax.plot(original_data_file['Density (kg/m3)'], original_data_file['Energy (J/kg)'],
            original_data_file['Temperature (K)'], color='red')
-ax.scatter(density, internal_energy, b.interpolate(), color='green')
+# ax.scatter(density, internal_energy, b.interpolate(), color='green')
 for i in b.points:
     ax.scatter(i[0], i[1], i[2], color='purple')
+
+# for i in [randint(0, len(original_data_file['Density (kg/m3)'])) for i in range(0, 100)]:
+    # d = original_data_file['Density (kg/m3)'][i]
+    # e = original_data_file['Energy (J/kg)'][i]
+
+for i in [randint(0, len(interpolation_file['Density (kg/m3)']) - 1) for i in range(0, 200)]:
+    d = interpolation_file['Density (kg/m3)'][i]
+    e = interpolation_file['Energy (J/kg)'][i]
+
+    r = BilinearInterpolation(density=d, internal_energy=e, density_array=density_array,
+                                  internal_energy_array=energy_array, variable_array=temperature_array,
+                              interpolation_type='nearest neighbors')
+    ax.scatter(d, e, r.interpolate())
+
 # for index, i in enumerate(density_array):
 #     print(index, len(density_array))
 #     density = density_array[index]
